@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mockup A — Editorial × Cartographic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #f4f1ea;
+    --paper-2: #ece7db;
+    --ink: #1c1b18;
+    --ink-soft: #4a4742;
+    --ink-faint: #8b867a;
+    --rule: #d3ccba;
+    --rule-strong: #b8b09b;
+    --orange: #cf552a;   /* survey orange */
+    --blue: #2f6d8c;     /* hydro blue */
+    --green: #5b7a52;    /* contour green */
+    --surface: #faf8f2;
+    --overlay: rgba(28, 27, 24, 0.34);
+  }
+  [data-theme="dark"] {
+    --paper: #15191c;
+    --paper-2: #1b2024;
+    --ink: #ece6da;
+    --ink-soft: #b3ab9c;
+    --ink-faint: #6b6657;
+    --rule: #2b3136;
+    --rule-strong: #3a4147;
+    --orange: #e9683a;
+    --blue: #5aa9cc;
+    --green: #82a877;
+    --surface: #191e22;
+    --overlay: rgba(6, 8, 9, 0.62);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Space Grotesk', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    transition: background .5s ease, color .5s ease;
+    overflow: hidden;
+  }
+
+  .stage {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 34px 56px 0;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  /* graticule ticks in margins */
+  .stage::before, .stage::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+    opacity: .5;
+  }
+  .stage::before {
+    left: 0; top: 0; bottom: 0; width: 56px;
+    background-image: repeating-linear-gradient(to bottom, var(--rule) 0 1px, transparent 1px 56px);
+  }
+  .stage::after {
+    right: 0; top: 0; bottom: 0; width: 56px;
+    background-image: repeating-linear-gradient(to bottom, var(--rule) 0 1px, transparent 1px 56px);
+  }
+
+  /* ---- top bar ---- */
+  .topbar {
+    display: flex; align-items: baseline; justify-content: space-between;
+    border-bottom: 1.5px solid var(--ink);
+    padding-bottom: 10px;
+  }
+  .eyebrow {
+    font-size: 11px; letter-spacing: .32em; text-transform: uppercase;
+    color: var(--ink-soft); font-weight: 600;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .eyebrow .coord { color: var(--orange); font-family: 'Space Grotesk'; letter-spacing: .12em; }
+  .topbar .meta { font-size: 11px; letter-spacing: .14em; color: var(--ink-faint); text-transform: uppercase; }
+
+  /* ---- title block ---- */
+  .titleblock {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-top: 22px;
+  }
+  .plate-no {
+    font-family: 'Fraunces'; font-weight: 500;
+    font-size: 13px; letter-spacing: .2em; color: var(--ink-faint);
+    text-transform: uppercase; margin-bottom: 14px;
+  }
+  h1 {
+    font-family: 'Fraunces'; font-weight: 400;
+    font-size: clamp(40px, 6vw, 76px); line-height: .98;
+    letter-spacing: -0.015em;
+  }
+  h1 em { font-style: italic; color: var(--orange); }
+  .dek {
+    font-size: 14px; color: var(--ink-soft); max-width: 300px; text-align: right;
+    line-height: 1.5; border-left: 2px solid var(--orange); padding-left: 14px;
+  }
+
+  /* ---- diagram ---- */
+  .diagram-wrap { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; padding: 8px 0; }
+  svg { width: 100%; max-width: 760px; height: 100%; max-height: 56vh; overflow: visible; }
+  .node { cursor: pointer; }
+  .node:hover .node-ring { stroke-width: 2.4; }
+  .node-label { font-family: 'Space Grotesk'; font-weight: 600; }
+  .legend-label { font-family: 'Space Grotesk'; font-size: 12px; letter-spacing: .04em; fill: var(--ink-soft); }
+  .legend-sub { font-family: 'Space Grotesk'; font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; fill: var(--ink-faint); }
+
+  /* ---- bottom nav (lower third) ---- */
+  .nav {
+    position: absolute; left: 56px; right: 56px; bottom: 30px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-top: 1px solid var(--rule-strong); padding-top: 14px;
+  }
+  .navbtn {
+    font-family: 'Space Grotesk'; font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--ink); background: none; border: none; cursor: pointer;
+    display: flex; align-items: center; gap: 10px; font-weight: 600;
+    padding: 6px 2px; transition: color .2s, gap .2s;
+  }
+  .navbtn:hover { color: var(--orange); }
+  .navbtn.prev:hover { gap: 14px; }
+  .navbtn.next:hover { gap: 14px; }
+  .navbtn .arrow { font-family: 'Fraunces'; font-size: 18px; }
+  /* scalebar progress */
+  .scalebar { display: flex; align-items: center; gap: 0; }
+  .scalebar .tick { width: 30px; height: 7px; border: 1px solid var(--ink-soft); }
+  .scalebar .tick.on { background: var(--orange); border-color: var(--orange); }
+  .scalebar .label { font-size: 10px; letter-spacing: .14em; color: var(--ink-faint); margin-left: 12px; text-transform: uppercase; }
+
+  /* ---- controls top-right ---- */
+  .controls { position: absolute; top: 34px; right: 56px; display: flex; gap: 10px; z-index: 30; }
+  .pill {
+    font-family: 'Space Grotesk'; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase;
+    border: 1px solid var(--rule-strong); background: var(--surface); color: var(--ink-soft);
+    padding: 7px 12px; border-radius: 2px; cursor: pointer; display: flex; align-items: center; gap: 8px;
+    transition: all .25s;
+  }
+  .pill:hover { border-color: var(--ink); color: var(--ink); }
+  .pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-faint); }
+  .pill.on .dot { background: var(--green); }
+
+  /* ---- modal ---- */
+  .overlay {
+    position: fixed; inset: 0; background: var(--overlay); z-index: 50;
+    display: none; align-items: center; justify-content: center; padding: 24px;
+    backdrop-filter: blur(2px);
+  }
+  .overlay.open { display: flex; animation: fade .3s ease; }
+  @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+  @keyframes rise { from { opacity: 0; transform: translateY(16px) } to { opacity: 1; transform: translateY(0) } }
+  .modal {
+    background: var(--surface); width: 100%; max-width: 560px; position: relative;
+    border: 1.5px solid var(--ink); padding: 6px;
+    animation: rise .34s cubic-bezier(.2,.7,.3,1);
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,.4);
+  }
+  .modal-inner { border: 1px solid var(--rule); padding: 30px 34px 34px; } /* neatline inset */
+  .modal .plate { font-family: 'Fraunces'; font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 16px; display: flex; gap: 10px; align-items: center; }
+  .modal .plate .sw { width: 14px; height: 14px; border-radius: 50%; }
+  .modal h2 { font-family: 'Fraunces'; font-weight: 400; font-size: 30px; line-height: 1.05; letter-spacing: -.01em; }
+  .modal .tag { font-size: 12.5px; color: var(--orange); margin-top: 6px; letter-spacing: .02em; }
+  .modal hr { border: none; border-top: 1px solid var(--rule); margin: 18px 0; }
+  .modal p { font-size: 13.5px; line-height: 1.7; color: var(--ink-soft); margin-bottom: 12px; }
+  .modal p.last { color: var(--ink); font-weight: 500; }
+  .modal-tools { position: absolute; top: 14px; right: 14px; display: flex; gap: 6px; }
+  .iconbtn {
+    width: 32px; height: 32px; border: 1px solid var(--rule-strong); background: var(--paper);
+    color: var(--ink-soft); cursor: pointer; display: flex; align-items: center; justify-content: center;
+    border-radius: 2px; transition: all .2s; font-size: 15px; line-height: 1;
+  }
+  .iconbtn:hover { border-color: var(--ink); color: var(--ink); }
+  .iconbtn.play { color: var(--orange); border-color: var(--orange); }
+  .narr-status {
+    margin-top: 18px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .narr-bar { flex: 1; height: 3px; background: var(--rule); position: relative; overflow: hidden; }
+  .narr-bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--orange); transition: width .1s linear; }
+
+  .note { position: absolute; bottom: 8px; left: 56px; font-size: 10px; color: var(--ink-faint); letter-spacing: .1em; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="controls">
+    <button class="pill" id="narrToggle"><span class="dot"></span> Narration</button>
+    <button class="pill" id="themeToggle">◐ Theme</button>
+  </div>
+
+  <div class="topbar">
+    <div class="eyebrow">Beyond the Chatbot <span class="coord">44.97°N&nbsp;94.16°W</span></div>
+    <div class="meta">MNGIA Thought Leader Summit</div>
+  </div>
+
+  <div class="titleblock">
+    <div>
+      <div class="plate-no">Plate 01 — Section I · Anatomy</div>
+      <h1>What Is an <em>Agent?</em></h1>
+    </div>
+    <div class="dek">An LLM core, wrapped in memory, tools, and planning — then sealed inside an autonomous execution shell.</div>
+  </div>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 760 440" id="diagram">
+      <!-- shell / neatline -->
+      <rect x="70" y="40" width="620" height="360" fill="none" stroke="var(--rule-strong)" stroke-width="1.5"/>
+      <rect x="70" y="40" width="620" height="360" fill="none" stroke="var(--orange)" stroke-width="1" stroke-dasharray="2 6" class="node node-ring" id="shellNode"/>
+      <text x="380" y="30" text-anchor="middle" class="legend-sub" fill="var(--orange)">⟵ Autonomous Execution Shell · loops · retries · scheduling ⟶</text>
+
+      <!-- graticule crosses -->
+      <g stroke="var(--rule)" stroke-width="1">
+        <path d="M210 40 v8 M210 392 v8 M380 40 v8 M380 392 v8 M550 40 v8 M550 392 v8"/>
+        <path d="M70 140 h8 M682 140 h8 M70 300 h8 M682 300 h8"/>
+      </g>
+
+      <!-- contour rings around core (elevation metaphor) -->
+      <g fill="none" stroke="var(--green)" opacity="0.5">
+        <circle cx="380" cy="220" r="120" stroke-dasharray="1 7"/>
+        <circle cx="380" cy="220" r="96"  stroke-dasharray="1 7"/>
+        <circle cx="380" cy="220" r="74"/>
+      </g>
+
+      <!-- connectors -->
+      <g stroke="var(--rule-strong)" stroke-width="1">
+        <line x1="380" y1="220" x2="235" y2="135"/>
+        <line x1="380" y1="220" x2="540" y2="135"/>
+        <line x1="380" y1="220" x2="380" y2="330"/>
+      </g>
+
+      <!-- ring nodes -->
+      <g class="node" data-id="memory">
+        <circle cx="235" cy="135" r="34" fill="var(--surface)" stroke="var(--blue)" stroke-width="1.5" class="node-ring"/>
+        <text x="235" y="139" text-anchor="middle" class="node-label" font-size="12" fill="var(--blue)">Memory</text>
+        <text x="235" y="86" text-anchor="middle" class="legend-sub">Persistent context</text>
+      </g>
+      <g class="node" data-id="tools">
+        <circle cx="540" cy="135" r="34" fill="var(--surface)" stroke="var(--green)" stroke-width="1.5" class="node-ring"/>
+        <text x="540" y="139" text-anchor="middle" class="node-label" font-size="12" fill="var(--green)">Tools</text>
+        <text x="540" y="86" text-anchor="middle" class="legend-sub">Act on the world</text>
+      </g>
+      <g class="node" data-id="planning">
+        <circle cx="380" cy="330" r="34" fill="var(--surface)" stroke="var(--blue)" stroke-width="1.5" class="node-ring"/>
+        <text x="380" y="334" text-anchor="middle" class="node-label" font-size="12" fill="var(--blue)">Planning</text>
+        <text x="380" y="383" text-anchor="middle" class="legend-sub">Decompose goals</text>
+      </g>
+
+      <!-- core -->
+      <g class="node" data-id="llm">
+        <circle cx="380" cy="220" r="50" fill="var(--surface)" stroke="var(--ink)" stroke-width="2" class="node-ring"/>
+        <circle cx="380" cy="220" r="50" fill="var(--orange)" opacity="0.07"/>
+        <text x="380" y="216" text-anchor="middle" class="node-label" font-size="15" fill="var(--ink)" font-family="Fraunces">LLM</text>
+        <text x="380" y="234" text-anchor="middle" class="legend-sub">reasoning core</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="nav">
+    <button class="navbtn prev"><span class="arrow">←</span> Prev · Title</button>
+    <div class="scalebar">
+      <div class="tick on"></div><div class="tick"></div><div class="tick"></div><div class="tick"></div>
+      <span class="label">01 / 11</span>
+    </div>
+    <button class="navbtn next">Next · Generative vs. Agentic <span class="arrow">→</span></button>
+  </div>
+
+  <div class="note">Mockup A — Editorial × Cartographic · click a node · toggle theme & narration</div>
+</div>
+
+<!-- modal -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-tools">
+      <button class="iconbtn play" id="playBtn" title="Play narration">▶</button>
+      <button class="iconbtn" id="closeBtn" title="Close">✕</button>
+    </div>
+    <div class="modal-inner">
+      <div class="plate"><span class="sw" id="mSw"></span><span id="mPlate">Component 01</span></div>
+      <h2 id="mName">Language Model</h2>
+      <div class="tag" id="mTag">The reasoning engine</div>
+      <hr/>
+      <div id="mBody"></div>
+      <div class="narr-status" id="narrStatus" style="display:none;">
+        <span id="narrLabel">Narrating</span>
+        <div class="narr-bar"><i id="narrFill"></i></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CONTENT = {
+  llm: { name:"Language Model", tag:"The reasoning engine", plate:"Component 01 · Core", color:"var(--orange)",
+    body:["At the core of every agent is a large language model — the part most people have already met. It reads natural language, reasons about it, and generates a response.",
+    "Inside an agent, the LLM isn't just answering. It's the decision layer: it reads context, weighs options, selects tools, interprets results, and decides what to do next.",
+    "The model itself doesn't change. What changes is everything around it."] },
+  memory: { name:"Memory", tag:"Persistent context across sessions", plate:"Component 02", color:"var(--blue)",
+    body:["A chatbot forgets the moment the conversation ends. An agent remembers — accumulating project context, preferences, past decisions, and lessons learned.",
+    "This ranges from conversation history to structured knowledge bases and episodic memory of what was tried and whether it worked.",
+    "Memory turns a stateless generator into something that gets better at your specific work the longer you use it."] },
+  tools: { name:"Tools", tag:"The ability to act on the world", plate:"Component 03", color:"var(--green)",
+    body:["Tools are what separate an agent from a chatbot. A chatbot generates text. An agent reads files, writes code, queries databases, calls APIs, runs commands.",
+    "Each tool is a capability the agent invokes when its reasoning calls for it — the way a person reaches for the right instrument for the job.",
+    "The number and quality of tools directly determines what an agent can accomplish."] },
+  planning: { name:"Planning", tag:"Breaking goals into executable steps", plate:"Component 04", color:"var(--blue)",
+    body:["Given a complex goal, an agent doesn't do everything at once. The planning layer decomposes it into subtasks, finds dependencies, sequences the work, and tracks progress.",
+    "This is what makes multi-step work possible: what happens first, what runs in parallel, what depends on earlier results.",
+    "Planning is also where the agent decides when to stop, when to ask for help, and when to reconsider its approach."] },
+  shell: { name:"Autonomous Execution", tag:"The shell that keeps it running", plate:"The Outer Shell", color:"var(--orange)",
+    body:["Everything inside makes an agent capable. The autonomous execution shell makes it independent — running continuously, retrying on failure, looping through recurring tasks over long horizons.",
+    "Without it, you have a capable assistant that still needs a human to start every action. With it, you have a system that can monitor overnight or run a multi-hour pipeline.",
+    "This is also where the risk lives. Autonomy means decisions get made when no one is watching."] },
+};
+
+const overlay = document.getElementById('overlay');
+const root = document.documentElement;
+let narrationOn = false, narrTimer = null;
+
+document.getElementById('themeToggle').onclick = () => {
+  root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+};
+const narrToggle = document.getElementById('narrToggle');
+narrToggle.onclick = () => {
+  narrationOn = !narrationOn;
+  narrToggle.classList.toggle('on', narrationOn);
+};
+
+function openModal(id){
+  const c = CONTENT[id]; if(!c) return;
+  document.getElementById('mName').textContent = c.name;
+  document.getElementById('mTag').textContent = c.tag;
+  document.getElementById('mPlate').textContent = c.plate;
+  document.getElementById('mSw').style.background = c.color;
+  document.getElementById('mTag').style.color = c.color;
+  document.getElementById('mBody').innerHTML = c.body.map((p,i)=>`<p class="${i===c.body.length-1?'last':''}">${p}</p>`).join('');
+  document.getElementById('playBtn').style.borderColor = c.color;
+  document.getElementById('playBtn').style.color = c.color;
+  overlay.classList.add('open');
+  if(narrationOn) startNarration(c.color); else stopNarration();
+}
+function startNarration(color){
+  const status = document.getElementById('narrStatus');
+  const fill = document.getElementById('narrFill');
+  document.getElementById('narrLabel').textContent = narrationOn ? 'Auto-narrating' : 'Narrating';
+  fill.style.background = color;
+  status.style.display = 'flex';
+  document.getElementById('playBtn').textContent = '❚❚';
+  let w = 0; clearInterval(narrTimer);
+  narrTimer = setInterval(()=>{ w += 0.7; fill.style.width = Math.min(w,100)+'%'; if(w>=100){clearInterval(narrTimer); document.getElementById('playBtn').textContent='▶';} }, 40);
+}
+function stopNarration(){
+  clearInterval(narrTimer);
+  document.getElementById('narrStatus').style.display = 'none';
+  document.getElementById('narrFill').style.width = '0%';
+  document.getElementById('playBtn').textContent = '▶';
+}
+document.getElementById('playBtn').onclick = (e)=>{ e.stopPropagation();
+  const playing = document.getElementById('narrStatus').style.display === 'flex' && document.getElementById('playBtn').textContent==='❚❚';
+  if(playing) stopNarration(); else startNarration(getComputedStyle(document.getElementById('mSw')).backgroundColor);
+};
+document.getElementById('closeBtn').onclick = ()=>{ overlay.classList.remove('open'); stopNarration(); };
+overlay.onclick = (e)=>{ if(e.target===overlay){ overlay.classList.remove('open'); stopNarration(); } };
+
+document.querySelectorAll('.node').forEach(n=>{
+  n.addEventListener('click', ()=> openModal(n.id==='shellNode' ? 'shell' : n.dataset.id));
+});
+document.getElementById('shellNode').addEventListener('click', ()=> openModal('shell'));
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ overlay.classList.remove('open'); stopNarration(); } });
+</script>
+</body>
+</html>

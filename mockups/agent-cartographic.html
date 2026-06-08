@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mockup C — Cartographic / Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,400;9..144,0,500;9..144,1,400;9..144,1,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --map: #e7ddc7;        /* aged paper */
+    --map-2: #ddd1b5;
+    --ink: #2e2920;        /* sepia ink */
+    --ink-soft: #5f5740;
+    --ink-faint: #9a8f72;
+    --neat: #2e2920;
+    --grat: #c4b794;       /* graticule */
+    --water: #6b94a6;
+    --elev: #9c7a4d;       /* elevation brown */
+    --forest: #6f8a5c;
+    --accent: #b5532e;     /* survey vermilion */
+    --surface: #efe7d3;
+    --overlay: rgba(46,41,32,.42);
+  }
+  [data-theme="dark"] {
+    --map: #1a1c18;        /* night chart */
+    --map-2: #20231d;
+    --ink: #e3dcc6;
+    --ink-soft: #b0a888;
+    --ink-faint: #6f6a52;
+    --neat: #b0a888;
+    --grat: #34372c;
+    --water: #6ea7bf;
+    --elev: #c39a64;
+    --forest: #8aa873;
+    --accent: #e0734a;
+    --surface: #21241d;
+    --overlay: rgba(8,9,6,.66);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--map); color: var(--ink);
+    font-family: 'Space Mono', monospace;
+    -webkit-font-smoothing: antialiased;
+    transition: background .5s, color .5s;
+    overflow: hidden;
+  }
+  /* graticule + faint contour texture on the whole field */
+  .field {
+    position: fixed; inset: 0;
+    background-image:
+      repeating-linear-gradient(to right, var(--grat) 0 1px, transparent 1px 64px),
+      repeating-linear-gradient(to bottom, var(--grat) 0 1px, transparent 1px 64px);
+    opacity: .28; pointer-events: none; z-index: 0;
+  }
+  .stage {
+    position: relative; z-index: 1; width: 100%; height: 100vh;
+    max-width: 1240px; margin: 0 auto; padding: 30px;
+    display: flex; flex-direction: column;
+  }
+  /* the map plate (neatline) */
+  .plate {
+    position: relative; flex: 1; display: flex; flex-direction: column;
+    border: 2px solid var(--neat); padding: 22px 30px 18px;
+    background: linear-gradient( to bottom, transparent, transparent );
+  }
+  .plate::before { /* inner neatline */
+    content:""; position:absolute; inset:5px; border:1px solid var(--neat); pointer-events:none;
+  }
+  /* corner coordinate ticks */
+  .corner { position:absolute; font-size:10px; letter-spacing:.05em; color:var(--ink-faint); }
+  .corner.tl{ top:10px; left:12px;} .corner.tr{ top:10px; right:12px; text-align:right;}
+  .corner.bl{ bottom:8px; left:12px;} .corner.br{ bottom:8px; right:12px; text-align:right;}
+
+  .header { display:flex; justify-content:space-between; align-items:flex-start; position:relative; z-index:2; }
+  .eyebrow { font-size:10.5px; letter-spacing:.24em; text-transform:uppercase; color:var(--ink-soft); }
+  .eyebrow b{ color:var(--accent); }
+  h1 { font-family:'Fraunces'; font-weight:400; font-size:clamp(38px,6vw,70px); line-height:.98; letter-spacing:-.01em; margin-top:8px; }
+  h1 em { font-style:italic; color:var(--accent); }
+  .sheet { text-align:right; font-size:10px; letter-spacing:.1em; color:var(--ink-faint); text-transform:uppercase; line-height:1.7; }
+  .sheet b{ color:var(--ink); font-weight:700; }
+
+  .diagram-wrap { flex:1; display:flex; align-items:center; justify-content:center; min-height:0; position:relative; z-index:1; }
+  svg { width:100%; max-width:680px; height:100%; max-height:48vh; overflow:visible; }
+  .node{ cursor:pointer; }
+  .node:hover .marker{ stroke-width:2.6; }
+  .node:hover .pin{ r:5; }
+  .mlabel{ font-family:'Fraunces'; font-style:italic; font-weight:500; }
+  .mtag{ font-family:'Space Mono'; font-size:9px; letter-spacing:.06em; fill:var(--ink-faint); text-transform:uppercase; }
+
+  /* legend box */
+  .legend { position:absolute; right:14px; bottom:14px; border:1px solid var(--neat); background:var(--surface); padding:9px 12px; font-size:9.5px; letter-spacing:.04em; z-index:3; }
+  .legend .lt{ text-transform:uppercase; letter-spacing:.16em; color:var(--ink-faint); margin-bottom:6px; font-size:8.5px;}
+  .legend .row{ display:flex; align-items:center; gap:7px; margin:3px 0; color:var(--ink-soft);}
+  .legend .key{ width:14px; height:8px; border:1px solid var(--neat); }
+
+  /* scale bar + north */
+  .northrose{ position:absolute; left:14px; bottom:12px; z-index:3; text-align:center; font-size:9px; color:var(--ink-soft);}
+  .northrose .n{ font-family:'Fraunces'; font-size:13px; }
+
+  .nav { display:flex; align-items:center; justify-content:space-between; padding-top:14px; position:relative; z-index:2; }
+  .navbtn{ background:none; border:1px solid var(--neat); cursor:pointer; color:var(--ink); font-family:'Space Mono'; font-size:11px; letter-spacing:.06em; text-transform:uppercase; padding:8px 14px; display:flex; align-items:center; gap:9px; transition:all .2s; }
+  .navbtn:hover{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .scale { text-align:center; font-size:9px; letter-spacing:.1em; color:var(--ink-faint); text-transform:uppercase; }
+  .scale .bar{ display:flex; margin:4px auto 0; width:130px; height:6px; border:1px solid var(--ink-soft); }
+  .scale .bar i{ flex:1; } .scale .bar i:nth-child(odd){ background:var(--ink-soft);} .scale .bar i.on{ background:var(--accent); border-color:var(--accent);}
+
+  .controls{ position:absolute; top:38px; right:42px; display:flex; gap:8px; z-index:5; }
+  .pill{ font-family:'Space Mono'; font-size:10px; letter-spacing:.08em; text-transform:uppercase; border:1px solid var(--neat); background:var(--surface); color:var(--ink-soft); padding:7px 11px; cursor:pointer; display:flex; align-items:center; gap:7px; transition:all .2s; }
+  .pill:hover{ border-color:var(--accent); color:var(--ink); }
+  .pill .dot{ width:7px;height:7px;border-radius:50%;background:var(--ink-faint);}
+  .pill.on .dot{ background:var(--forest); }
+
+  .overlay{ position:fixed; inset:0; background:var(--overlay); z-index:50; display:none; align-items:center; justify-content:center; padding:24px; }
+  .overlay.open{ display:flex; animation:fade .3s ease; }
+  @keyframes fade{ from{opacity:0} to{opacity:1} }
+  @keyframes rise{ from{opacity:0; transform:translateY(14px)} to{opacity:1; transform:translateY(0)} }
+  .modal{ background:var(--surface); width:100%; max-width:540px; position:relative; border:2px solid var(--neat); padding:7px; animation:rise .34s cubic-bezier(.2,.7,.3,1); box-shadow:0 24px 50px -18px rgba(0,0,0,.45); }
+  .modal-inner{ border:1px solid var(--neat); padding:28px 32px 30px; position:relative; }
+  .modal .plno{ font-size:9.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-faint); display:flex; align-items:center; gap:9px; margin-bottom:14px; }
+  .modal .plno .sw{ width:12px;height:12px;border:1px solid var(--neat);}
+  .modal h2{ font-family:'Fraunces'; font-weight:400; font-size:30px; line-height:1.04; }
+  .modal h2 em{ font-style:italic; color:var(--accent); }
+  .modal .tag{ font-style:italic; font-family:'Fraunces'; font-size:14px; color:var(--accent); margin-top:5px; }
+  .modal .rule{ border-top:1px solid var(--neat); margin:16px 0; opacity:.5; }
+  /* photographic plate, duotone-graded to belong in the atlas */
+  .figplate{ margin:16px 0 2px; border:1px solid var(--neat); padding:5px; background:var(--map); }
+  .figplate .img{
+    height:188px; position:relative; overflow:hidden;
+    filter:contrast(1.05);
+    background:
+      repeating-radial-gradient(circle at 32% 38%, rgba(46,41,32,.22) 0 1px, transparent 1px 5px),
+      radial-gradient(circle at 34% 36%, rgba(255,255,255,.35) 0 12%, transparent 42%),
+      linear-gradient(135deg, var(--fig, var(--accent)) 0%, transparent 58%),
+      linear-gradient(0deg, var(--ink) -8%, var(--surface) 118%);
+  }
+  [data-theme="dark"] .figplate .img{ background:
+      repeating-radial-gradient(circle at 32% 38%, rgba(227,220,198,.12) 0 1px, transparent 1px 5px),
+      radial-gradient(circle at 34% 36%, rgba(255,240,200,.18) 0 12%, transparent 42%),
+      linear-gradient(135deg, var(--fig, var(--accent)) 0%, transparent 58%),
+      linear-gradient(0deg, #000 -8%, var(--surface) 128%); }
+  .figplate .cap{ display:flex; justify-content:space-between; align-items:center;
+    font-size:8.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint); padding:5px 3px 0; }
+  .figplate .cap b{ color:var(--ink-soft); font-weight:700; }
+  .modal p{ font-size:13px; line-height:1.72; color:var(--ink-soft); margin-bottom:11px; }
+  .modal p.last{ color:var(--ink); }
+  .modal-tools{ position:absolute; top:14px; right:14px; display:flex; gap:6px; z-index:4; }
+  .iconbtn{ width:32px;height:32px; border:1px solid var(--neat); background:var(--map); color:var(--ink-soft); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s; font-size:14px; }
+  .iconbtn:hover{ background:var(--ink); color:var(--surface); }
+  .iconbtn.play{ color:var(--accent); border-color:var(--accent); }
+  .iconbtn.play:hover{ background:var(--accent); color:#fff; }
+  .narr{ margin-top:16px; display:none; align-items:center; gap:10px; }
+  .narr.show{ display:flex; }
+  .narr .lab{ font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); white-space:nowrap; }
+  .narr .track{ flex:1; height:4px; border:1px solid var(--ink-faint); position:relative; }
+  .narr .track i{ position:absolute; inset:0 auto 0 0; width:0; background:var(--accent); }
+</style>
+</head>
+<body>
+<div class="field"></div>
+<div class="stage">
+  <div class="controls">
+    <button class="pill" id="narrToggle"><span class="dot"></span> Narration</button>
+    <button class="pill" id="themeToggle">◐ Theme</button>
+  </div>
+
+  <div class="plate">
+    <span class="corner tl">44°58′N</span><span class="corner tr">094°10′W</span>
+    <span class="corner bl">SHEET 01</span><span class="corner br">SCALE 1:1</span>
+
+    <div class="header">
+      <div>
+        <div class="eyebrow"><b>◆</b> Beyond the Chatbot — An Atlas of Agentic AI</div>
+        <h1>What Is an <em>Agent?</em></h1>
+      </div>
+      <div class="sheet">Section I · The Survey<br/><b>Plate 01 of 11</b><br/>MNGIA Summit</div>
+    </div>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 680 380" id="diagram">
+        <!-- boundary / shell as a surveyed region -->
+        <rect x="44" y="34" width="592" height="312" fill="none" stroke="var(--neat)" stroke-width="1.5" stroke-dasharray="9 4 2 4" class="node" id="shellNode"/>
+        <text x="340" y="26" text-anchor="middle" class="mtag" fill="var(--accent)">REGION BOUNDARY · AUTONOMOUS EXECUTION SHELL</text>
+
+        <!-- contour rings = elevation around the core peak -->
+        <g fill="none" stroke="var(--elev)" opacity=".55">
+          <circle cx="340" cy="196" r="120" stroke-dasharray="2 6"/>
+          <circle cx="340" cy="196" r="92"/>
+          <circle cx="340" cy="196" r="64" stroke-dasharray="2 6"/>
+        </g>
+
+        <!-- roads/connectors -->
+        <g stroke="var(--ink-faint)" stroke-width="1" stroke-dasharray="1 5">
+          <line x1="340" y1="196" x2="170" y2="120"/>
+          <line x1="340" y1="196" x2="510" y2="120"/>
+          <line x1="340" y1="196" x2="340" y2="300"/>
+        </g>
+
+        <!-- settlement markers -->
+        <g class="node" data-id="memory">
+          <circle class="marker" cx="170" cy="120" r="30" fill="var(--surface)" stroke="var(--water)" stroke-width="1.6"/>
+          <circle class="pin" cx="170" cy="120" r="3.5" fill="var(--water)"/>
+          <text x="170" y="118" text-anchor="middle" class="mlabel" font-size="13" fill="var(--water)">Memory</text>
+          <text x="170" y="76" text-anchor="middle" class="mtag">persistent context</text>
+        </g>
+        <g class="node" data-id="tools">
+          <circle class="marker" cx="510" cy="120" r="30" fill="var(--surface)" stroke="var(--forest)" stroke-width="1.6"/>
+          <circle class="pin" cx="510" cy="120" r="3.5" fill="var(--forest)"/>
+          <text x="510" y="118" text-anchor="middle" class="mlabel" font-size="13" fill="var(--forest)">Tools</text>
+          <text x="510" y="76" text-anchor="middle" class="mtag">act on the world</text>
+        </g>
+        <g class="node" data-id="planning">
+          <circle class="marker" cx="340" cy="300" r="30" fill="var(--surface)" stroke="var(--water)" stroke-width="1.6"/>
+          <circle class="pin" cx="340" cy="300" r="3.5" fill="var(--water)"/>
+          <text x="340" y="298" text-anchor="middle" class="mlabel" font-size="12" fill="var(--water)">Planning</text>
+          <text x="340" y="346" text-anchor="middle" class="mtag">decompose goals</text>
+        </g>
+
+        <!-- the peak / capital -->
+        <g class="node" data-id="llm">
+          <circle class="marker" cx="340" cy="196" r="40" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/>
+          <path d="M340 178 l11 20 h-22 z" fill="var(--accent)"/>
+          <text x="340" y="216" text-anchor="middle" class="mlabel" font-size="14" fill="var(--accent)">LLM</text>
+          <text x="340" y="150" text-anchor="middle" class="mtag" fill="var(--accent)">reasoning core ▲ summit</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="legend">
+      <div class="lt">Legend</div>
+      <div class="row"><span class="key" style="background:var(--accent)"></span> Reasoning core</div>
+      <div class="row"><span class="key" style="background:var(--water)"></span> Memory / Planning</div>
+      <div class="row"><span class="key" style="background:var(--forest)"></span> Tools</div>
+      <div class="row"><span class="key" style="border-style:dashed;background:transparent"></span> Shell boundary</div>
+    </div>
+    <div class="northrose"><div class="n">↑</div>N</div>
+  </div>
+
+  <div class="nav">
+    <button class="navbtn prev">← Title Plate</button>
+    <div class="scale">Plate 01 / 11
+      <div class="bar"><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+    <button class="navbtn next">Generative vs. Agentic →</button>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-tools">
+      <button class="iconbtn play" id="playBtn" title="Play narration">▶</button>
+      <button class="iconbtn" id="closeBtn" title="Close">✕</button>
+    </div>
+    <div class="modal-inner">
+      <div class="plno"><span class="sw" id="mSw"></span><span id="mPl">Marker 01</span></div>
+      <h2 id="mName">Language Model</h2>
+      <div class="tag" id="mTag">The reasoning engine</div>
+      <div class="figplate">
+        <div class="img" id="mFig"></div>
+        <div class="cap"><span id="mFigCap"><b>Fig. 01</b> — photographic plate</span><span>Duotone · 768×1152</span></div>
+      </div>
+      <div class="rule"></div>
+      <div id="mBody"></div>
+      <div class="narr" id="narr"><span class="lab" id="narrLabel">Narrating</span><div class="track"><i id="narrFill"></i></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CONTENT={
+  llm:{pl:"Marker 01 · Summit",name:"Language Model",tag:"The reasoning engine",c:"var(--accent)",body:["At the core of every agent is a large language model — the part most people have already met. It reads natural language, reasons about it, and generates a response.","Inside an agent, the LLM isn't just answering. It's the decision layer: it reads context, weighs options, selects tools, interprets results, and decides what to do next.","The model itself doesn't change. What changes is everything around it."]},
+  memory:{pl:"Marker 02",name:"Memory",tag:"Persistent context across sessions",c:"var(--water)",body:["A chatbot forgets the moment the conversation ends. An agent remembers — accumulating project context, preferences, past decisions, and lessons learned.","This ranges from conversation history to structured knowledge bases and episodic memory of what was tried and whether it worked.","Memory turns a stateless generator into something that gets better at your specific work the longer you use it."]},
+  tools:{pl:"Marker 03",name:"Tools",tag:"The ability to act on the world",c:"var(--forest)",body:["Tools are what separate an agent from a chatbot. A chatbot generates text. An agent reads files, writes code, queries databases, calls APIs, runs commands.","Each tool is a capability the agent invokes when its reasoning calls for it — the way a person reaches for the right instrument for the job.","The number and quality of tools directly determines what an agent can accomplish."]},
+  planning:{pl:"Marker 04",name:"Planning",tag:"Breaking goals into executable steps",c:"var(--water)",body:["Given a complex goal, an agent doesn't do everything at once. The planning layer decomposes it into subtasks, finds dependencies, sequences the work, and tracks progress.","This is what makes multi-step work possible: what happens first, what runs in parallel, what depends on earlier results.","Planning is also where the agent decides when to stop, when to ask for help, and when to reconsider its approach."]},
+  shell:{pl:"Region Boundary",name:"Autonomous Execution",tag:"The shell that keeps it running",c:"var(--accent)",body:["Everything inside makes an agent capable. The autonomous execution shell makes it independent — running continuously, retrying on failure, looping through recurring tasks over long horizons.","Without it, you have a capable assistant that still needs a human to start every action. With it, you have a system that can monitor overnight or run a multi-hour pipeline.","This is also where the risk lives. Autonomy means decisions get made when no one is watching."]},
+};
+const FIG={ llm:{n:"01",file:"agent_llm.png"}, memory:{n:"02",file:"agent_memory.png"}, tools:{n:"03",file:"agent_tools.png"}, planning:{n:"04",file:"agent_planning.png"}, shell:{n:"05",file:"agent_autonomy.png"} };
+const overlay=document.getElementById('overlay'), root=document.documentElement;
+let narrationOn=false, t=null;
+document.getElementById('themeToggle').onclick=()=>root.dataset.theme=root.dataset.theme==='dark'?'light':'dark';
+const nt=document.getElementById('narrToggle');
+nt.onclick=()=>{narrationOn=!narrationOn;nt.classList.toggle('on',narrationOn);};
+function open(id){const c=CONTENT[id];if(!c)return;
+  document.getElementById('mPl').textContent=c.pl;
+  document.getElementById('mName').textContent=c.name;
+  document.getElementById('mTag').textContent=c.tag;
+  document.getElementById('mTag').style.color=c.c;
+  document.getElementById('mSw').style.background=c.c;
+  document.getElementById('mBody').innerHTML=c.body.map((p,i)=>`<p class="${i===c.body.length-1?'last':''}">${p}</p>`).join('');
+  document.getElementById('playBtn').style.color=c.c;
+  document.getElementById('playBtn').style.borderColor=c.c;
+  document.getElementById('mFig').style.setProperty('--fig', c.c);
+  const fg=FIG[id]||{n:"01",file:"plate.png"};
+  document.getElementById('mFigCap').innerHTML=`<b>Fig. ${fg.n}</b> — ${fg.file}`;
+  overlay.classList.add('open');
+  if(narrationOn)play(c.c); else stop();
+}
+function play(c){const n=document.getElementById('narr');n.classList.add('show');
+  document.getElementById('narrLabel').textContent=narrationOn?'Auto-narrating':'Narrating';
+  const f=document.getElementById('narrFill'); if(c) f.style.background=c;
+  document.getElementById('playBtn').textContent='❚❚';
+  let w=0;clearInterval(t);
+  t=setInterval(()=>{w+=0.7;f.style.width=Math.min(w,100)+'%';if(w>=100){clearInterval(t);document.getElementById('playBtn').textContent='▶';}},40);
+}
+function stop(){clearInterval(t);document.getElementById('narr').classList.remove('show');document.getElementById('narrFill').style.width='0%';document.getElementById('playBtn').textContent='▶';}
+document.getElementById('playBtn').onclick=e=>{e.stopPropagation();document.getElementById('playBtn').textContent==='❚❚'?stop():play();};
+document.getElementById('closeBtn').onclick=()=>{overlay.classList.remove('open');stop();};
+overlay.onclick=e=>{if(e.target===overlay){overlay.classList.remove('open');stop();}};
+document.querySelectorAll('.node').forEach(n=>n.addEventListener('click',()=>open(n.id==='shellNode'?'shell':n.dataset.id)));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){overlay.classList.remove('open');stop();}});
+</script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mockup B — Swiss Editorial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Narrow:wght@500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #faf9f6;
+    --bg-2: #f0eee8;
+    --fg: #0d0d0d;
+    --fg-soft: #45443f;
+    --fg-faint: #9a988f;
+    --rule: #d9d6cd;
+    --rule-strong: #0d0d0d;
+    --accent: #e5341f;       /* signal red */
+    --surface: #ffffff;
+    --overlay: rgba(13,13,13,.4);
+  }
+  [data-theme="dark"] {
+    --bg: #0d0d0d;
+    --bg-2: #161616;
+    --fg: #f5f3ee;
+    --fg-soft: #b8b6ae;
+    --fg-faint: #6a685f;
+    --rule: #2a2a28;
+    --rule-strong: #f5f3ee;
+    --accent: #ff4326;
+    --surface: #141413;
+    --overlay: rgba(0,0,0,.66);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg); color: var(--fg);
+    font-family: 'Archivo', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    transition: background .5s, color .5s;
+    overflow: hidden;
+  }
+  .stage { position: relative; width: 100%; height: 100vh; max-width: 1280px; margin: 0 auto; padding: 40px 60px 0; display: flex; flex-direction: column; }
+
+  .topbar { display: flex; justify-content: space-between; align-items: center; }
+  .eyebrow { font-size: 11px; letter-spacing: .3em; text-transform: uppercase; font-weight: 700; }
+  .eyebrow .dotmark { color: var(--accent); }
+  .meta { font-family: 'Archivo Narrow'; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-faint); }
+
+  .titlegrid { margin-top: 30px; display: grid; grid-template-columns: auto 1fr; gap: 36px; align-items: start; }
+  .bignum { font-weight: 900; font-size: clamp(70px, 11vw, 150px); line-height: .8; letter-spacing: -.04em; color: var(--accent); }
+  .titlecol { padding-top: 6px; }
+  h1 { font-weight: 800; font-size: clamp(40px, 6.4vw, 82px); line-height: .92; letter-spacing: -.035em; max-width: 12ch; }
+  .dek { margin-top: 18px; font-size: 15px; line-height: 1.5; color: var(--fg-soft); max-width: 46ch; font-weight: 400; }
+  .dek b { font-weight: 700; color: var(--fg); }
+
+  .diagram-wrap { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; }
+  svg { width: 100%; max-width: 720px; height: 100%; max-height: 50vh; overflow: visible; }
+  .node { cursor: pointer; }
+  .node:hover circle { fill: var(--accent); }
+  .node:hover .nlabel { fill: var(--surface); }
+  .nlabel { font-family: 'Archivo'; font-weight: 700; }
+  .ntag { font-family: 'Archivo Narrow'; font-weight: 600; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; fill: var(--fg-faint); }
+  .nnum { font-family: 'Archivo'; font-weight: 900; fill: var(--fg-faint); }
+
+  .nav { position: absolute; left: 60px; right: 60px; bottom: 34px; display: flex; align-items: center; justify-content: space-between; }
+  .navbtn { background: none; border: none; cursor: pointer; color: var(--fg); font-family: 'Archivo'; font-weight: 700; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; display: flex; align-items: center; gap: 10px; transition: color .2s; }
+  .navbtn:hover { color: var(--accent); }
+  .navbtn span.a { font-size: 20px; font-weight: 900; }
+  .counter { font-family: 'Archivo'; font-weight: 900; font-size: 13px; letter-spacing: .1em; display: flex; align-items: center; gap: 10px; }
+  .counter .bars { display: flex; gap: 4px; }
+  .counter .bars i { width: 20px; height: 4px; background: var(--rule); }
+  .counter .bars i.on { background: var(--accent); }
+
+  .controls { position: absolute; top: 40px; right: 60px; display: flex; gap: 8px; z-index: 30; }
+  .pill { font-family: 'Archivo Narrow'; font-weight: 600; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; border: 1.5px solid var(--rule-strong); background: transparent; color: var(--fg); padding: 7px 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all .2s; }
+  .pill:hover { background: var(--fg); color: var(--bg); }
+  .pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--fg-faint); }
+  .pill.on .dot { background: var(--accent); }
+  .pill.on:hover .dot { background: var(--bg); }
+
+  .overlay { position: fixed; inset: 0; background: var(--overlay); z-index: 50; display: none; align-items: stretch; justify-content: flex-end; }
+  .overlay.open { display: flex; animation: fade .25s ease; }
+  @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+  @keyframes slidein { from { transform: translateX(40px); opacity: .4 } to { transform: translateX(0); opacity: 1 } }
+  .modal { background: var(--surface); width: 100%; max-width: 520px; height: 100%; position: relative; padding: 54px 50px; overflow-y: auto; animation: slidein .35s cubic-bezier(.2,.7,.3,1); border-left: 6px solid var(--accent); }
+  .modal .num { font-weight: 900; font-size: 64px; line-height: .8; color: var(--accent); letter-spacing: -.04em; }
+  .modal h2 { font-weight: 800; font-size: 38px; line-height: .95; letter-spacing: -.03em; margin-top: 14px; }
+  .modal .tag { font-family: 'Archivo Narrow'; font-weight: 600; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-top: 12px; }
+  .modal .rule { height: 2px; background: var(--fg); margin: 24px 0; }
+  .modal p { font-size: 15px; line-height: 1.65; color: var(--fg-soft); margin-bottom: 14px; }
+  .modal p.last { color: var(--fg); font-weight: 600; }
+  .modal-tools { position: absolute; top: 22px; right: 22px; display: flex; gap: 8px; }
+  .iconbtn { width: 38px; height: 38px; border: 1.5px solid var(--rule-strong); background: transparent; color: var(--fg); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; transition: all .2s; }
+  .iconbtn:hover { background: var(--fg); color: var(--surface); }
+  .iconbtn.play { border-color: var(--accent); color: var(--accent); }
+  .iconbtn.play:hover { background: var(--accent); color: #fff; }
+  .narr { margin-top: 24px; display: none; align-items: center; gap: 12px; }
+  .narr.show { display: flex; }
+  .narr .lab { font-family: 'Archivo Narrow'; font-weight: 600; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-faint); white-space: nowrap; }
+  .narr .track { flex: 1; height: 4px; background: var(--rule); position: relative; }
+  .narr .track i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--accent); }
+
+  .note { position: absolute; bottom: 12px; left: 60px; font-family: 'Archivo Narrow'; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-faint); }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="controls">
+    <button class="pill" id="narrToggle"><span class="dot"></span> Narration</button>
+    <button class="pill" id="themeToggle">◐ Theme</button>
+  </div>
+
+  <div class="topbar">
+    <div class="eyebrow">Beyond the Chatbot <span class="dotmark">●</span></div>
+    <div class="meta">MNGIA Thought Leader Summit / Mark Gill</div>
+  </div>
+
+  <div class="titlegrid">
+    <div class="bignum">01</div>
+    <div class="titlecol">
+      <h1>What Is an Agent?</h1>
+      <div class="dek">An <b>LLM core</b>, wrapped in <b>memory</b>, <b>tools</b>, and <b>planning</b> — then sealed inside an <b>autonomous execution shell</b>. The model doesn't change. Everything around it does.</div>
+    </div>
+  </div>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 720 380" id="diagram">
+      <!-- shell -->
+      <rect x="40" y="30" width="640" height="320" fill="none" stroke="var(--rule)" stroke-width="2" class="node" id="shellNode"/>
+      <text x="52" y="22" class="ntag" fill="var(--accent)">05 — Autonomous Execution Shell</text>
+
+      <!-- connectors -->
+      <g stroke="var(--rule)" stroke-width="2">
+        <line x1="360" y1="190" x2="180" y2="120"/>
+        <line x1="360" y1="190" x2="540" y2="120"/>
+        <line x1="360" y1="190" x2="360" y2="290"/>
+      </g>
+
+      <!-- core -->
+      <g class="node" data-id="llm">
+        <circle cx="360" cy="190" r="52" fill="var(--surface)" stroke="var(--rule-strong)" stroke-width="3"/>
+        <text x="360" y="186" text-anchor="middle" class="nlabel" font-size="18" fill="var(--fg)">LLM</text>
+        <text x="360" y="206" text-anchor="middle" class="ntag">Core</text>
+      </g>
+      <!-- nodes -->
+      <g class="node" data-id="memory">
+        <text x="180" y="60" text-anchor="middle" class="nnum" font-size="14">02</text>
+        <circle cx="180" cy="120" r="40" fill="var(--surface)" stroke="var(--rule-strong)" stroke-width="2"/>
+        <text x="180" y="125" text-anchor="middle" class="nlabel" font-size="13" fill="var(--fg)">Memory</text>
+      </g>
+      <g class="node" data-id="tools">
+        <text x="540" y="60" text-anchor="middle" class="nnum" font-size="14">03</text>
+        <circle cx="540" cy="120" r="40" fill="var(--surface)" stroke="var(--rule-strong)" stroke-width="2"/>
+        <text x="540" y="125" text-anchor="middle" class="nlabel" font-size="13" fill="var(--fg)">Tools</text>
+      </g>
+      <g class="node" data-id="planning">
+        <circle cx="360" cy="290" r="40" fill="var(--surface)" stroke="var(--rule-strong)" stroke-width="2"/>
+        <text x="360" y="289" text-anchor="middle" class="nlabel" font-size="12" fill="var(--fg)">Planning</text>
+        <text x="360" y="345" text-anchor="middle" class="nnum" font-size="14">04</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="nav">
+    <button class="navbtn prev"><span class="a">←</span> Title</button>
+    <div class="counter"><div class="bars"><i class="on"></i><i></i><i></i><i></i></div> 01 / 11</div>
+    <button class="navbtn next">Generative vs. Agentic <span class="a">→</span></button>
+  </div>
+
+  <div class="note">Mockup B — Swiss Editorial · click a node · toggle theme & narration</div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-tools">
+      <button class="iconbtn play" id="playBtn" title="Play narration">▶</button>
+      <button class="iconbtn" id="closeBtn" title="Close">✕</button>
+    </div>
+    <div class="num" id="mNum">01</div>
+    <h2 id="mName">Language Model</h2>
+    <div class="tag" id="mTag">The reasoning engine</div>
+    <div class="rule"></div>
+    <div id="mBody"></div>
+    <div class="narr" id="narr"><span class="lab" id="narrLabel">Narrating</span><div class="track"><i id="narrFill"></i></div></div>
+  </div>
+</div>
+
+<script>
+const CONTENT = {
+  llm:{num:"01",name:"Language Model",tag:"The reasoning engine",body:["At the core of every agent is a large language model — the part most people have already met. It reads natural language, reasons about it, and generates a response.","Inside an agent, the LLM isn't just answering. It's the decision layer: it reads context, weighs options, selects tools, interprets results, and decides what to do next.","The model itself doesn't change. What changes is everything around it."]},
+  memory:{num:"02",name:"Memory",tag:"Persistent context across sessions",body:["A chatbot forgets the moment the conversation ends. An agent remembers — accumulating project context, preferences, past decisions, and lessons learned.","This ranges from conversation history to structured knowledge bases and episodic memory of what was tried and whether it worked.","Memory turns a stateless generator into something that gets better at your specific work the longer you use it."]},
+  tools:{num:"03",name:"Tools",tag:"The ability to act on the world",body:["Tools are what separate an agent from a chatbot. A chatbot generates text. An agent reads files, writes code, queries databases, calls APIs, runs commands.","Each tool is a capability the agent invokes when its reasoning calls for it — the way a person reaches for the right instrument for the job.","The number and quality of tools directly determines what an agent can accomplish."]},
+  planning:{num:"04",name:"Planning",tag:"Breaking goals into executable steps",body:["Given a complex goal, an agent doesn't do everything at once. The planning layer decomposes it into subtasks, finds dependencies, sequences the work, and tracks progress.","This is what makes multi-step work possible: what happens first, what runs in parallel, what depends on earlier results.","Planning is also where the agent decides when to stop, when to ask for help, and when to reconsider its approach."]},
+  shell:{num:"05",name:"Autonomous Execution",tag:"The shell that keeps it running",body:["Everything inside makes an agent capable. The autonomous execution shell makes it independent — running continuously, retrying on failure, looping through recurring tasks over long horizons.","Without it, you have a capable assistant that still needs a human to start every action. With it, you have a system that can monitor overnight or run a multi-hour pipeline.","This is also where the risk lives. Autonomy means decisions get made when no one is watching."]},
+};
+const overlay=document.getElementById('overlay'), root=document.documentElement;
+let narrationOn=false, t=null;
+document.getElementById('themeToggle').onclick=()=>root.dataset.theme=root.dataset.theme==='dark'?'light':'dark';
+const nt=document.getElementById('narrToggle');
+nt.onclick=()=>{narrationOn=!narrationOn;nt.classList.toggle('on',narrationOn);};
+function open(id){const c=CONTENT[id];if(!c)return;
+  document.getElementById('mNum').textContent=c.num;
+  document.getElementById('mName').textContent=c.name;
+  document.getElementById('mTag').textContent=c.tag;
+  document.getElementById('mBody').innerHTML=c.body.map((p,i)=>`<p class="${i===c.body.length-1?'last':''}">${p}</p>`).join('');
+  overlay.classList.add('open');
+  if(narrationOn)play(); else stop();
+}
+function play(){const n=document.getElementById('narr');n.classList.add('show');
+  document.getElementById('narrLabel').textContent=narrationOn?'Auto-narrating':'Narrating';
+  document.getElementById('playBtn').textContent='❚❚';
+  const f=document.getElementById('narrFill');let w=0;clearInterval(t);
+  t=setInterval(()=>{w+=0.7;f.style.width=Math.min(w,100)+'%';if(w>=100){clearInterval(t);document.getElementById('playBtn').textContent='▶';}},40);
+}
+function stop(){clearInterval(t);document.getElementById('narr').classList.remove('show');document.getElementById('narrFill').style.width='0%';document.getElementById('playBtn').textContent='▶';}
+document.getElementById('playBtn').onclick=e=>{e.stopPropagation();document.getElementById('playBtn').textContent==='❚❚'?stop():play();};
+document.getElementById('closeBtn').onclick=()=>{overlay.classList.remove('open');stop();};
+overlay.onclick=e=>{if(e.target===overlay){overlay.classList.remove('open');stop();}};
+document.querySelectorAll('.node').forEach(n=>n.addEventListener('click',()=>open(n.id==='shellNode'?'shell':n.dataset.id)));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){overlay.classList.remove('open');stop();}});
+</script>
+</body>
+</html>

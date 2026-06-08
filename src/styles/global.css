@@ -1,0 +1,309 @@
+@import './tokens.css';
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, #root { height: 100%; }
+
+body {
+  background: var(--map);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.5s ease, color 0.5s ease;
+  overflow: hidden;
+}
+
+button { font-family: inherit; }
+
+/* graticule field across the whole viewport */
+.app-field {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.28;
+  background-image:
+    repeating-linear-gradient(to right, var(--grat) 0 1px, transparent 1px 64px),
+    repeating-linear-gradient(to bottom, var(--grat) 0 1px, transparent 1px 64px);
+}
+
+/* ============================== DECK ============================== */
+.deck {
+  position: relative; z-index: 1;
+  width: 100%; height: 100vh; height: 100dvh;
+  max-width: var(--plate-max); margin: 0 auto;
+  padding: 26px 30px 0;
+  display: flex; flex-direction: column;
+}
+
+/* ============================== PLATE ============================== */
+.plate {
+  position: relative; flex: 1; min-height: 0;
+  display: flex; flex-direction: column;
+  border: 2px solid var(--neat);
+  padding: 22px 30px 18px;
+  animation: plate-in 0.45s var(--ease);
+}
+.plate::before { /* inner neatline */
+  content: ''; position: absolute; inset: 5px;
+  border: 1px solid var(--neat); pointer-events: none;
+}
+@keyframes plate-in { from { opacity: 0; } to { opacity: 1; } }
+
+.corner {
+  position: absolute; font-family: var(--font-mono);
+  font-size: 10px; letter-spacing: 0.05em; color: var(--ink-faint);
+}
+.corner.tl { top: 10px; left: 12px; }
+.corner.tr { top: 10px; right: 12px; text-align: right; }
+.corner.bl { bottom: 8px; left: 12px; }
+.corner.br { bottom: 8px; right: 12px; text-align: right; }
+
+.plate-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 24px; position: relative; z-index: 2;
+}
+.eyebrow {
+  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.24em;
+  text-transform: uppercase; color: var(--ink-soft);
+}
+.eyebrow b { color: var(--accent); }
+.slide-title {
+  font-family: var(--font-display); font-weight: 400;
+  font-size: clamp(34px, 5.4vw, 66px); line-height: 0.98;
+  letter-spacing: -0.01em; margin-top: 8px;
+}
+.slide-title em { font-style: italic; color: var(--accent); }
+.sheet {
+  text-align: right; font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.1em; color: var(--ink-faint); text-transform: uppercase;
+  line-height: 1.7; white-space: nowrap;
+}
+.sheet b { color: var(--ink); font-weight: 700; }
+
+.stage {
+  flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center;
+  position: relative; z-index: 1; padding: 8px 0;
+}
+
+/* legend + north rose (optional per slide) */
+.legend {
+  position: absolute; right: 14px; bottom: 30px; z-index: 3;
+  border: 1px solid var(--neat); background: var(--surface);
+  padding: 9px 12px; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.04em;
+}
+.legend .lt { text-transform: uppercase; letter-spacing: 0.16em; color: var(--ink-faint); margin-bottom: 6px; font-size: 8.5px; }
+.legend .row { display: flex; align-items: center; gap: 7px; margin: 3px 0; color: var(--ink-soft); }
+.legend .key { width: 14px; height: 8px; border: 1px solid var(--neat); }
+.northrose {
+  position: absolute; left: 14px; bottom: 32px; z-index: 3; text-align: center;
+  font-family: var(--font-mono); font-size: 9px; color: var(--ink-soft);
+}
+.northrose .n { font-family: var(--font-display); font-size: 13px; }
+
+/* plates with un-revealed phases invite a click to build */
+.plate.buildable { cursor: pointer; }
+.build-hint {
+  position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); z-index: 3;
+  font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--ink-faint); pointer-events: none; opacity: 0.5; animation: hint-pulse 2.2s ease-in-out infinite;
+}
+@keyframes hint-pulse { 0%, 100% { opacity: 0.25; } 50% { opacity: 0.6; } }
+/* prominent guided variant — invites the click once the intro has played */
+.build-hint.guided {
+  font-size: 9.5px; color: var(--accent); opacity: 1;
+  padding: 5px 12px; border: 1px solid var(--accent); background: var(--surface);
+  animation: guided-pulse 1.7s ease-in-out infinite;
+}
+@keyframes guided-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 36%, transparent); }
+  50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 12%, transparent); }
+}
+
+/* self-guided "what am I looking at?" flash once a plate is fully revealed */
+.platenote.flash {
+  animation: notes-flash 1.5s ease-in-out infinite;
+  border-color: var(--accent); color: var(--ink);
+}
+@keyframes notes-flash {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 40%, transparent); border-color: var(--neat); }
+  50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent); border-color: var(--accent); }
+}
+
+/* self-guided plate-intro caption box (bottom-centre of the window) */
+.plate-intro {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: 78px; z-index: 45;
+  width: min(680px, 90vw); background: var(--surface); border: 1px solid var(--neat);
+  box-shadow: 0 14px 36px -16px rgba(0,0,0,0.5); padding: 12px 14px;
+  animation: rise 0.34s var(--ease);
+}
+.plate-intro .pi-body { display: flex; align-items: flex-start; gap: 12px; }
+.plate-intro .pi-text { flex: 1; font-family: var(--font-body); font-size: 14.5px; line-height: 1.55; color: var(--ink-soft); }
+.plate-intro .pi-tools { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+.plate-intro .iconbtn { width: 28px; height: 28px; font-size: 11px; }
+.plate-intro .spoken { padding: 0 1.5px; border-radius: 3px; transition: color 0.1s linear, background 0.1s linear; }
+.plate-intro .spoken.on { color: var(--accent); background: color-mix(in srgb, var(--accent) 15%, transparent); }
+.plate-intro.leaving { animation: pi-leave 0.48s ease forwards; }
+@keyframes pi-leave {
+  from { opacity: 1; transform: translateX(-50%) translateY(0); }
+  to { opacity: 0; transform: translateX(-50%) translateY(12px); }
+}
+@media (max-width: 760px) { .plate-intro { bottom: 70px; } }
+
+/* ============================== DIAGRAM PRIMITIVES ============================== */
+.node { cursor: pointer; }
+.node:hover .marker { stroke-width: 2.6; }
+.node:hover .pin { r: 5; }
+.mlabel { font-family: var(--font-display); font-style: italic; font-weight: 500; }
+.mtag { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.06em; fill: var(--ink-faint); text-transform: uppercase; }
+
+/* ============================== NAV (lower third) ============================== */
+.deck-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 4px 16px; position: relative; z-index: 2;
+}
+.navbtn {
+  background: none; border: 1px solid var(--neat); cursor: pointer; color: var(--ink);
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 9px 15px; display: flex; align-items: center; gap: 9px; transition: all 0.2s;
+}
+.navbtn:hover:not(:disabled) { background: var(--accent); border-color: var(--accent); color: #fff; }
+.navbtn:disabled { opacity: 0.32; cursor: default; }
+.navbtn .a { font-size: 13px; }
+/* self-guided: Next button invites the move to the next plate */
+.navbtn.pulse { position: relative; border-color: var(--accent); color: var(--accent); animation: guided-pulse 1.7s ease-in-out infinite; }
+.navbtn.pulse .nav-cue {
+  position: absolute; bottom: calc(100% + 7px); right: 0; white-space: nowrap;
+  font-size: 8px; letter-spacing: 0.16em; color: var(--accent); opacity: 0.85;
+}
+.scale { text-align: center; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; color: var(--ink-faint); text-transform: uppercase; }
+.scale .bar { display: flex; margin: 5px auto 0; width: 150px; height: 6px; border: 1px solid var(--ink-soft); }
+.scale .bar i { flex: 1; border-right: 1px solid var(--ink-soft); }
+.scale .bar i:last-child { border-right: none; }
+.scale .bar i.on { background: var(--accent); }
+
+/* ============================== CONTROLS (top-right) ============================== */
+.controls { position: fixed; top: 30px; right: calc((100vw - var(--plate-max)) / 2 + 36px); display: flex; gap: 8px; z-index: 40; }
+@media (max-width: 1300px) { .controls { right: 36px; } }
+.pill {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+  border: 1px solid var(--neat); background: var(--surface); color: var(--ink-soft);
+  padding: 7px 11px; cursor: pointer; display: flex; align-items: center; gap: 7px; transition: all 0.2s;
+}
+.pill:hover { border-color: var(--accent); color: var(--ink); }
+.pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-faint); }
+.pill.on .dot { background: var(--accent-forest); }
+
+/* ============================== MODAL ============================== */
+.overlay {
+  position: fixed; inset: 0; background: var(--overlay); z-index: 50;
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+  animation: fade 0.3s ease;
+}
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+
+.modal {
+  background: var(--surface); width: 100%; max-width: 540px; position: relative;
+  border: 2px solid var(--neat); padding: 7px;
+  animation: rise 0.34s var(--ease);
+  box-shadow: 0 24px 50px -18px rgba(0, 0, 0, 0.45);
+  max-height: 88vh; display: flex;
+}
+.modal-inner { border: 1px solid var(--neat); padding: 28px 32px 30px; position: relative; overflow-y: auto; width: 100%; }
+.modal .plno { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); display: flex; align-items: center; gap: 9px; margin-bottom: 14px; }
+.modal .plno .sw { width: 12px; height: 12px; border: 1px solid var(--neat); }
+.modal h2 { font-family: var(--font-display); font-weight: 400; font-size: 30px; line-height: 1.04; }
+.modal h2 em { font-style: italic; color: var(--accent); }
+.modal .tag { font-family: var(--font-display); font-style: italic; font-size: 14px; color: var(--accent); margin-top: 5px; }
+.modal .rule { border-top: 1px solid var(--neat); margin: 16px 0; opacity: 0.5; }
+.modal p { font-size: 14px; line-height: 1.72; color: var(--ink-soft); margin-bottom: 11px; }
+.modal p.last { color: var(--ink); }
+/* presenter-mode bullets (Self-Guided OFF) */
+.modal-bullets { list-style: none; margin: 4px 0 0; padding: 0; }
+.modal-bullets li { display: flex; gap: 11px; align-items: flex-start; font-size: 15.5px; line-height: 1.5; color: var(--ink); padding: 7px 0; }
+.modal-bullets .bmk { flex-shrink: 0; font-family: var(--font-mono); font-weight: 700; }
+
+.modal-tools { position: absolute; top: 14px; right: 14px; display: flex; gap: 6px; z-index: 4; }
+.iconbtn {
+  width: 32px; height: 32px; border: 1px solid var(--neat); background: var(--map);
+  color: var(--ink-soft); cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; font-size: 14px; line-height: 1;
+}
+.iconbtn:hover { background: var(--ink); color: var(--surface); }
+.iconbtn.play { color: var(--accent); border-color: var(--accent); }
+.iconbtn.play:hover { background: var(--accent); color: #fff; }
+
+/* photographic plate inside the modal */
+.figplate { margin: 16px 0 2px; border: 1px solid var(--neat); padding: 5px; background: var(--map); }
+.figplate .img {
+  height: 188px; position: relative; overflow: hidden; filter: contrast(1.05);
+  background:
+    repeating-radial-gradient(circle at 32% 38%, var(--halftone) 0 1px, transparent 1px 5px),
+    radial-gradient(circle at 34% 36%, var(--plate-glow) 0 12%, transparent 42%),
+    linear-gradient(135deg, var(--fig, var(--accent)) 0%, transparent 58%),
+    linear-gradient(0deg, var(--plate-top) -8%, var(--plate-bottom) 120%);
+}
+.figplate .cap { display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); padding: 5px 3px 0; }
+.figplate .cap b { color: var(--ink-soft); font-weight: 700; }
+
+/* karaoke word highlight — constant padding so toggling never reflows the text */
+.spoken { padding: 0 1.5px; border-radius: 3px; transition: color 0.1s linear, background 0.1s linear; }
+.spoken.on { background: color-mix(in srgb, currentColor 15%, transparent); }
+
+/* narration progress */
+.narr { margin-top: 16px; display: flex; align-items: center; gap: 10px; }
+.narr .lab { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); white-space: nowrap; }
+.narr .track { flex: 1; height: 4px; border: 1px solid var(--ink-faint); position: relative; }
+.narr .track i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--accent); }
+
+/* ============================== MENU ============================== */
+.menu-overlay { position: fixed; inset: 0; background: var(--overlay); z-index: 60; display: flex; align-items: center; justify-content: center; padding: 24px; animation: fade 0.25s ease; }
+.menu { background: var(--surface); border: 2px solid var(--neat); padding: 8px; max-width: 720px; width: 100%; max-height: 86vh; animation: rise 0.3s var(--ease); }
+.menu-inner { border: 1px solid var(--neat); padding: 26px 30px 30px; overflow-y: auto; max-height: calc(86vh - 16px); }
+.menu h3 { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); margin: 18px 0 10px; }
+.menu h3:first-child { margin-top: 0; }
+.menu .item {
+  display: flex; align-items: baseline; gap: 14px; width: 100%; text-align: left;
+  background: none; border: none; border-bottom: 1px solid var(--neat); cursor: pointer;
+  padding: 11px 4px; color: var(--ink); transition: all 0.18s;
+}
+.menu .item:hover { padding-left: 12px; color: var(--accent); }
+.menu .item.current { color: var(--accent); }
+.menu .item .ix { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); width: 34px; flex-shrink: 0; }
+.menu .item:hover .ix { color: var(--accent); }
+.menu .item .nm { font-family: var(--font-display); font-size: 18px; }
+.menu-title { font-family: var(--font-display); font-size: 24px; margin-bottom: 4px; }
+.menu-sub { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 18px; }
+
+/* ============================== PLACEHOLDER SLIDE ============================== */
+.placeholder { text-align: center; max-width: 560px; }
+.placeholder .ph-tag { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 16px; }
+.placeholder .ph-mark { font-family: var(--font-display); font-style: italic; font-size: 64px; color: var(--accent); opacity: 0.5; margin-bottom: 12px; }
+.placeholder .ph-note { font-family: var(--font-mono); font-size: 12px; color: var(--ink-soft); line-height: 1.7; letter-spacing: 0.03em; }
+
+/* ============================== RESPONSIVE / MOBILE ============================== */
+@media (max-width: 760px) {
+  .deck { padding: 12px 12px 0; }
+  /* controls drop into flow above the plate so they never overlap the header */
+  .controls {
+    position: static; right: auto; top: auto;
+    display: flex; justify-content: flex-end; flex-wrap: wrap;
+    gap: 6px; margin-bottom: 8px;
+  }
+  .pill { padding: 6px 9px; font-size: 9px; }
+  .plate { padding: 16px 16px 14px; }
+  .plate-header { gap: 12px; }
+  .slide-title { font-size: clamp(28px, 8.5vw, 40px); }
+  .sheet { font-size: 9px; }
+  .corner { font-size: 8px; }
+  /* legend + north rose clutter a phone; hide them */
+  .legend, .northrose { display: none; }
+  .deck-nav { padding: 10px 2px 12px; }
+  .navbtn { padding: 8px 11px; font-size: 10px; }
+  .navbtn .a { font-size: 12px; }
+  .scale { font-size: 8.5px; }
+  .scale .bar { width: 96px; }
+  .modal-inner { padding: 22px 20px 24px; }
+  .figplate .img { height: 150px; }
+}
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

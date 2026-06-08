@@ -1,0 +1,68 @@
+/* ============================================================
+   Atlas design tokens — the single source of truth for the
+   Cartographic / Atlas theme. Light = aged paper; dark = night chart.
+   Change colors here, not in components.
+   ============================================================ */
+
+:root {
+  /* fonts */
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Fraunces', Georgia, serif;
+  --font-mono: 'Space Mono', 'SF Mono', monospace;
+
+  /* survey accents — shared by both themes, tuned per theme below */
+  --vermilion: #b5532e;
+  --water: #6b94a6;
+  --forest: #6f8a5c;
+  --elev: #9c7a4d;
+
+  /* layout */
+  --plate-max: 1240px;
+  --radius: 0px;
+  --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+/* ---- Light: aged paper ---- */
+:root,
+[data-theme='light'] {
+  --map: #e7ddc7;
+  --map-2: #ddd1b5;
+  --ink: #2e2920;
+  --ink-soft: #5f5740;
+  --ink-faint: #9a8f72;
+  --neat: #2e2920;
+  --grat: #c4b794;
+  --surface: #efe7d3;
+  --accent: #b5532e;
+  --accent-water: #6b94a6;
+  --accent-forest: #6f8a5c;
+  --accent-elev: #9c7a4d;
+  --overlay: rgba(46, 41, 32, 0.42);
+  --hazard: #8f3a23;
+  --halftone: rgba(46, 41, 32, 0.22);
+  --plate-glow: rgba(255, 255, 255, 0.35);
+  --plate-bottom: var(--surface);
+  --plate-top: var(--ink);
+}
+
+/* ---- Dark: night chart ---- */
+[data-theme='dark'] {
+  --map: #1a1c18;
+  --map-2: #20231d;
+  --ink: #e3dcc6;
+  --ink-soft: #b0a888;
+  --ink-faint: #6f6a52;
+  --neat: #b0a888;
+  --grat: #34372c;
+  --surface: #21241d;
+  --accent: #e0734a;
+  --accent-water: #6ea7bf;
+  --accent-forest: #8aa873;
+  --accent-elev: #c39a64;
+  --overlay: rgba(8, 9, 6, 0.66);
+  --hazard: #d3603c;
+  --halftone: rgba(227, 220, 198, 0.12);
+  --plate-glow: rgba(255, 240, 200, 0.18);
+  --plate-bottom: var(--surface);
+  --plate-top: #000;
+}

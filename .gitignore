@@ -1,0 +1,25 @@
+node_modules
+dist
+dist-ssr
+*.local
+.DS_Store
+.vite
+
+# Secrets — API keys live here, local only, NEVER commit
+scripts/secrets.json
+secrets.json
+
+# generation scratch logs
+scripts/.gen-log.txt
+scripts/.intros-log.txt
+scripts/.narr-log.txt
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
