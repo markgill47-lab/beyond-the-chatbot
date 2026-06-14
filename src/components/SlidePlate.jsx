@@ -1,4 +1,5 @@
 import { useApp } from '../context/AppContext.jsx'
+import CompassRose from './CompassRose.jsx'
 
 /*
   SlidePlate — the Atlas "map plate" chrome shared by every slide:
@@ -16,6 +17,7 @@ export default function SlidePlate({
   corners = {},
   legend,
   north = false,
+  qr = false,
   onNotes,
   notesLabel = 'Survey notes',
   children,
@@ -71,7 +73,28 @@ export default function SlidePlate({
           ))}
         </div>
       )}
-      {north && <div className="northrose"><div className="n">↑</div>N</div>}
+      <a
+        className="compass"
+        href="https://truenorthaiservices.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        title="True North AI Services"
+        aria-label="True North AI Services"
+      >
+        <CompassRose />
+      </a>
+      {qr && (
+        <a
+          className="deck-qr"
+          href="https://beyond-the-chatbot.onrender.com/#/title"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Open this presentation"
+        >
+          <img src={`${import.meta.env.BASE_URL}qr-deck.svg`} alt="QR code to this presentation" />
+          <span>scan to view</span>
+        </a>
+      )}
       {showBuildHint && <div className={`build-hint${guided ? ' guided' : ''}`} aria-hidden="true">{hintText}</div>}
     </div>
   )

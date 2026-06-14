@@ -9,6 +9,7 @@ export default function ThankYou() {
       title={<>Thank <em>You</em></>}
       sheet={<>End of Survey<br /><b>Plate 13</b></>}
       corners={{ tl: '44°58′N', tr: '094°10′W', bl: 'EDITION I', br: 'OPEN FLOOR' }}
+      qr
     >
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 26, textAlign: 'center', maxWidth: 700 }}>
         <div style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 'clamp(34px, 6vw, 56px)', lineHeight: 1.05, color: 'var(--accent)' }}>

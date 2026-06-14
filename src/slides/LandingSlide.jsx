@@ -10,6 +10,7 @@ export default function LandingSlide() {
       title={<>Beyond the <em>Chatbot</em></>}
       sheet={<>Frontispiece<br /><b>Sheet 00</b></>}
       corners={{ tl: '44°58′N', tr: '094°10′W', bl: 'EDITION I', br: 'SCALE 1:1' }}
+      qr
     >
       <div style={{ maxWidth: 720, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 22 }}>
         <p style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 'clamp(15px,2vw,20px)', color: 'var(--ink-soft)', lineHeight: 1.5, maxWidth: 640 }}>
